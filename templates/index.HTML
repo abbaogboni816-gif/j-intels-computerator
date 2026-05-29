@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>J-Intels Calculator</title>
+</head>
+
+<body>
+    <h1>J-Intels Computerator</h1>
+    <p>Welcome to my calculator</p>
+
+    <input type="text" id="num1" placeholder="Enter first number or expression">
+    <input type="text" id="num2" placeholder="Enter second number (if needed)">
+    <input type="text" id="variable" placeholder="Variable (for algebra operations, default is x)">
+    <select id="operation">
+        <option value="add">Add</option>
+        <option value="subtract">Subtract</option>
+        <option value="multiply">Multiply</option>
+        <option value="divide">Divide</option>
+        <option value="modulus">Modulus</option>
+        <option value="sqrt">Square Root</option>
+        <option value="differentiate">Differentiate</option>
+        <option value="integrate">Integrate</option>
+        <option value="solve">Solve Algebra</option>
+    </select>
+    <button onclick="calculate()">Calculate</button>
+    <p id="result"></p>
+    <script>
+        function calculate() {
+            const operation = document.getElementById("operation").value;
+            const num1 = document.getElementById("num1").value;
+            const num2 = document.getElementById("num2").value;
+            const variable = document.getElementById("variable").value || 'x';
+
+            // Prepare request body based on operation type
+            let requestBody = {};
+
+            if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation)) {
+                // Basic arithmetic operations
+                requestBody = {
+                    num1: parseFloat(num1),
+                    num2: parseFloat(num2),
+                    operation: operation
+                };
+            } else if (operation === "sqrt") {
+                // Square root
+                requestBody = {
+                    num1: parseFloat(num1),
+                    operation: operation
+                };
+            } else if (operation === "differentiate") {
+                // Differentiate
+                requestBody = {
+                    expression: num1,
+                    variable: variable,
+                    operation: operation
+                };
+            } else if (operation === "integrate") {
+                // Integrate
+                requestBody = {
+                    expression: num1,
+                    variable: variable,
+                    operation: operation
+                };
+            } else if (operation === "solve") {
+                // Solve algebra
+                requestBody = {
+                    expression: num1,
+                    operation: operation
+                };
+            }
+
+            fetch("/calculate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.result !== undefined) {
+                        document.getElementById("result").innerText = `Result: ${data.result}`;
+                    } else if (data.error) {
+                        document.getElementById("result").innerText = `Error: ${data.error}`;
+                    } else {
+                        document.getElementById("result").innerText = `Result: ${JSON.stringify(data)}`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("result").innerText = "An error occurred.";
+                });
+        }
+    </script>
+</body>
+
+</html>
