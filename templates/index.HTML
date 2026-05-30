@@ -1,75 +1,245 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>J-Intels Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            background-color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: center;
+            min-height: 50px;
+            display: none;
+        }
+
+        #result.success {
+            display: block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        #result.error {
+            display: block;
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .operation-hint {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>J-Intels Computerator</h1>
-    <p>Welcome to my calculator</p>
+    <div class="container">
+        <h1>J-Intels Calculator</h1>
+        <p class="subtitle">Professional Calculator for All Your Needs</p>
 
-    <input type="text" id="num1" placeholder="Enter first number or expression">
-    <input type="text" id="num2" placeholder="Enter second number (if needed)">
-    <input type="text" id="variable" placeholder="Variable (for algebra operations, default is x)">
-    <select id="operation">
-        <option value="add">Add</option>
-        <option value="subtract">Subtract</option>
-        <option value="multiply">Multiply</option>
-        <option value="divide">Divide</option>
-        <option value="modulus">Modulus</option>
-        <option value="sqrt">Square Root</option>
-        <option value="differentiate">Differentiate</option>
-        <option value="integrate">Integrate</option>
-        <option value="solve">Solve Algebra</option>
-    </select>
-    <button onclick="calculate()">Calculate</button>
-    <p id="result"></p>
+        <div class="form-group">
+            <label for="operation">Select Operation</label>
+            <select id="operation" onchange="updateLabels()">
+                <option value="add">Add</option>
+                <option value="subtract">Subtract</option>
+                <option value="multiply">Multiply</option>
+                <option value="divide">Divide</option>
+                <option value="modulus">Modulus</option>
+                <option value="sqrt">Square Root</option>
+                <option value="differentiate">Differentiate</option>
+                <option value="integrate">Integrate</option>
+                <option value="solve">Solve Equation</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="num1" id="label1">Enter first number or expression</label>
+            <input type="text" id="num1" placeholder="e.g., 10 or x**2+3*x+2">
+        </div>
+
+        <div class="form-group" id="group2">
+            <label for="num2" id="label2">Enter second number</label>
+            <input type="text" id="num2" placeholder="e.g., 5">
+        </div>
+
+        <div class="form-group" id="group3" style="display: none;">
+            <label for="variable">Variable (default: x)</label>
+            <input type="text" id="variable" placeholder="x">
+            <div class="operation-hint">Use for calculus operations</div>
+        </div>
+
+        <button onclick="calculate()">Calculate</button>
+        <div id="result"></div>
+    </div>
+
     <script>
+        function updateLabels() {
+            const operation = document.getElementById("operation").value;
+            const label1 = document.getElementById("label1");
+            const label2 = document.getElementById("label2");
+            const group2 = document.getElementById("group2");
+            const group3 = document.getElementById("group3");
+
+            // Hide everything initially
+            group2.style.display = "block";
+            group3.style.display = "none";
+
+            if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation)) {
+                label1.textContent = "Enter first number";
+                label2.textContent = "Enter second number";
+            } else if (operation === "sqrt") {
+                label1.textContent = "Enter a number";
+                group2.style.display = "none";
+            } else if (["differentiate", "integrate"].includes(operation)) {
+                label1.textContent = "Enter expression (e.g., x**2 + 3*x + 2)";
+                group2.style.display = "none";
+                group3.style.display = "block";
+            } else if (operation === "solve") {
+                label1.textContent = "Enter equation (e.g., (x+3)(x-3)=0)";
+                group2.style.display = "none";
+            }
+        }
+
         function calculate() {
             const operation = document.getElementById("operation").value;
             const num1 = document.getElementById("num1").value;
             const num2 = document.getElementById("num2").value;
-            const variable = document.getElementById("variable").value || 'x';
+            const variable = document.getElementById("variable").value || "x";
+            const resultDiv = document.getElementById("result");
 
-            // Prepare request body based on operation type
-            let requestBody = {};
-
-            if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation)) {
-                // Basic arithmetic operations
-                requestBody = {
-                    num1: parseFloat(num1),
-                    num2: parseFloat(num2),
-                    operation: operation
-                };
-            } else if (operation === "sqrt") {
-                // Square root
-                requestBody = {
-                    num1: parseFloat(num1),
-                    operation: operation
-                };
-            } else if (operation === "differentiate") {
-                // Differentiate
-                requestBody = {
-                    expression: num1,
-                    variable: variable,
-                    operation: operation
-                };
-            } else if (operation === "integrate") {
-                // Integrate
-                requestBody = {
-                    expression: num1,
-                    variable: variable,
-                    operation: operation
-                };
-            } else if (operation === "solve") {
-                // Solve algebra
-                requestBody = {
-                    expression: num1,
-                    operation: operation
-                };
+            // Validation
+            if (!num1 || num1.trim() === "") {
+                showError("Please enter a value");
+                return;
             }
 
+            if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation) && (!num2 || num2.trim() === "")) {
+                showError("Please enter both numbers");
+                return;
+            }
+
+            // Prepare request body
+            let requestBody = {
+                operation: operation
+            };
+
+            if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation)) {
+                requestBody.num1 = parseFloat(num1);
+                requestBody.num2 = parseFloat(num2);
+            } else if (operation === "sqrt") {
+                requestBody.num1 = parseFloat(num1);
+            } else if (["differentiate", "integrate"].includes(operation)) {
+                requestBody.expression = num1;
+                requestBody.variable = variable;
+            } else if (operation === "solve") {
+                requestBody.expression = num1;
+            }
+
+            // Send request
             fetch("/calculate", {
                 method: "POST",
                 headers: {
@@ -79,19 +249,41 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.result !== undefined) {
-                        document.getElementById("result").innerText = `Result: ${data.result}`;
-                    } else if (data.error) {
-                        document.getElementById("result").innerText = `Error: ${data.error}`;
+                    if (data.error) {
+                        showError(data.error);
+                    } else if (data.result !== undefined) {
+                        showSuccess(`Result: ${data.result}`);
                     } else {
-                        document.getElementById("result").innerText = `Result: ${JSON.stringify(data)}`;
+                        showSuccess(`Result: ${JSON.stringify(data.result)}`);
                     }
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    document.getElementById("result").innerText = "An error occurred.";
+                    showError("An error occurred. Please try again.");
                 });
         }
+
+        function showSuccess(message) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.textContent = message;
+            resultDiv.className = "success";
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.textContent = message;
+            resultDiv.className = "error";
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                calculate();
+            }
+        });
+
+        // Update labels on page load
+        updateLabels();
     </script>
 </body>
 

@@ -1,12 +1,23 @@
 """
-Calculator Web Application
+Professional Calculator Web Application
 
-A Flask-based web interface for the calculator module.
-Provides a web UI for performing basic arithmetic operations.
+A Flask-based REST API providing web and browser interfaces for the J-Intels Calculator.
+Serves both the web UI (HTML/CSS/JavaScript) and programmatic API endpoints.
+
+Features:
+- RESTful API for all calculator operations
+- Web UI with responsive, professional design
+- Support for basic arithmetic and advanced algebra operations
+- Comprehensive error handling and validation
+- JSON-based request/response format
+
+Author: J-Intels
+Version: 2.0 - Professional Edition
 """
 
 from flask import Flask, render_template, request, jsonify
 import calculator
+from pyngrok import ngrok
 
 
 app = Flask(__name__)
@@ -56,6 +67,8 @@ def calculate():
                 return jsonify({"error": "Missing required field: expression."}), 400
             
             result = calculator.solve_algebra(expression)
+            # Convert result to list of strings for JSON serialization
+            result = [str(r) for r in result] if isinstance(result, list) else str(result)
             return jsonify({"result": result})
         
         # Handle basic arithmetic operations
@@ -115,4 +128,28 @@ def calculate():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="localhost", port=5000)
+    # Set host to 0.0.0.0 to allow access from other devices on the network
+    # Access from this computer: http://localhost:5000
+    # Access from other devices: http://<your-ip>:5000 or http://<computer-name>:5000
+    
+    print("\n" + "="*60)
+    print("J-INTELS CALCULATOR - STARTING SERVER")
+    print("="*60)
+    
+    try:
+        # Create ngrok tunnel for public internet access
+        public_url = ngrok.connect(5000)
+        print(f"\n✅ PUBLIC URL (Access from ANYWHERE): {public_url}")
+        print(f"   Share this link with anyone on the internet!\n")
+    except Exception as e:
+        print(f"\n⚠️  Could not create public URL: {e}")
+        print("   But local network access still works!\n")
+    
+    print(f"✅ LOCAL NETWORK URL: http://<your-ip>:5000")
+    print(f"   (Replace <your-ip> with your computer's IP address)\n")
+    print(f"✅ LOCAL COMPUTER URL: http://localhost:5000\n")
+    print("="*60)
+    print("Press CTRL+C to stop the server")
+    print("="*60 + "\n")
+    
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)

@@ -1,9 +1,20 @@
 """
-Calculator module for performing basic arithmetic operations.
+Professional Calculator Module
+
+This module provides comprehensive mathematical operations including:
+- Basic arithmetic (add, subtract, multiply, divide, modulus)
+- Advanced functions (square root)
+- Algebraic operations (solve equations, differentiation, integration)
+
+Supports symbolic mathematics through SymPy for advanced calculations.
+All functions include proper error handling and validation.
+
+Author: J-Intels
+Version: 2.0 - Professional Edition
 """
 
 import math
-from sympy import symbols, solve, diff, integrate, sympify
+from sympy import symbols, solve, diff, integrate
 from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
 
 

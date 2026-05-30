@@ -1,76 +1,158 @@
-"""Calculator GUI"""
+"""
+Calculator GUI Application
+
+A professional Tkinter-based graphical calculator interface.
+Supports basic arithmetic, square root, and trigonometric functions.
+"""
+
 import tkinter as tk
+import math
 from calculator import add, subtract, multiply, divide, find_modulus, find_square_root
 
 # Create window
 window = tk.Tk()
-window.title("J-Intels Computerator")
-window.geometry("1080x1024")
-window.configure(bg="black")
+window.title("J-Intels Calculator")
+window.geometry("500x650")
+window.configure(bg="#2c3e50")
+window.resizable(False, False)
 
 # Configuration
-font = ("Arial", 23)
-background_color = "black"
-button_color = "gray"
-justify = "center"
+font_display = ("Arial", 28, "bold")
+font_buttons = ("Arial", 16, "bold")
+background_color = "#2c3e50"
+button_color = "#34495e"
+button_hover = "#1a252f"
+result_color = "#2ecc71"
+error_color = "#e74c3c"
+text_color = "white"
 
 # Create display
-display = tk.Entry(window, width=30, borderwidth=5)
-display.grid(row=0, column=0, columnspan=4, padx=5, pady=20)
-display.configure(font=font, bg="white", fg="black", justify=justify)
+display = tk.Entry(window, width=20, borderwidth=3, relief=tk.RAISED)
+display.grid(row=0, column=0, columnspan=4, padx=10, pady=20, sticky="nsew")
+display.configure(
+    font=font_display,
+    bg="#ecf0f1",
+    fg="#2c3e50",
+    justify="right",
+    insertbackground="#34495e"
+)
 
 # Button configuration
-button_color = "gray"
-button_width = 5
+button_width = 4
 button_height = 2
-button_font = ("Arial", 18)
 buttons = [
-    ["7", "8", "9", "/"],
-    ["4", "5", "6", "*"],
+    ["7", "8", "9", "÷"],
+    ["4", "5", "6", "×"],
     ["1", "2", "3", "-"],
     ["0", ".", "=", "+"],
-    ["C", "√", "%"],
-    ["Cos", "sin", "tan"]
+    ["C", "√", "%", "Backspace"],
+    ["cos", "sin", "tan", "π"]
 ]
 
 # Define button actions
 def on_button_click(button_text):
-    """Handle button clicks"""
-    if button_text == "C":
+    """Handle button clicks with proper error handling."""
+    current = display.get()
+    
+    try:
+        if button_text == "C":
+            display.delete(0, tk.END)
+        
+        elif button_text == "Backspace":
+            display.delete(len(current) - 1, tk.END)
+        
+        elif button_text == "=":
+            # Replace display symbols with Python operators
+            expression = current.replace("÷", "/").replace("×", "*")
+            result = eval(expression)
+            display.delete(0, tk.END)
+            display.insert(tk.END, str(round(result, 10)))
+        
+        elif button_text == "√":
+            if current:
+                result = find_square_root(float(current))
+                display.delete(0, tk.END)
+                display.insert(tk.END, str(round(result, 10)))
+        
+        elif button_text == "π":
+            display.insert(tk.END, str(round(math.pi, 10)))
+        
+        elif button_text == "sin":
+            if current:
+                result = math.sin(math.radians(float(current)))
+                display.delete(0, tk.END)
+                display.insert(tk.END, str(round(result, 10)))
+        
+        elif button_text == "cos":
+            if current:
+                result = math.cos(math.radians(float(current)))
+                display.delete(0, tk.END)
+                display.insert(tk.END, str(round(result, 10)))
+        
+        elif button_text == "tan":
+            if current:
+                result = math.tan(math.radians(float(current)))
+                display.delete(0, tk.END)
+                display.insert(tk.END, str(round(result, 10)))
+        
+        else:
+            display.insert(tk.END, button_text)
+    
+    except ValueError:
         display.delete(0, tk.END)
-    elif button_text == "=":
-        try:
-            result = eval(display.get())
-            display.delete(0, tk.END)
-            display.insert(tk.END, str(result))
-        except:
-            display.delete(0, tk.END)
-            display.insert(tk.END, "Error")
-    elif button_text == "√":
-        try:
-            result = find_square_root(float(display.get()))
-            display.delete(0, tk.END)
-            display.insert(tk.END, str(result))
-        except:
-            display.delete(0, tk.END)
-            display.insert(tk.END, "Error")
-    else:
-        display.insert(tk.END, button_text)
+        display.insert(tk.END, "Error")
+    except ZeroDivisionError:
+        display.delete(0, tk.END)
+        display.insert(tk.END, "Error: Div by 0")
+    except Exception as e:
+        display.delete(0, tk.END)
+        display.insert(tk.END, "Error")
 
-# Create buttons
+# Create buttons with improved styling
 for row_index, button_row in enumerate(buttons):
     for col_index, button_text in enumerate(button_row):
+        def create_command(text):
+            return lambda: on_button_click(text)
+        
+        # Color coding for buttons
+        if button_text == "=":
+            btn_bg = "#27ae60"
+            btn_fg = "white"
+        elif button_text == "C":
+            btn_bg = "#e74c3c"
+            btn_fg = "white"
+        elif button_text in ["÷", "×", "-", "+", "%", "√", "Backspace"]:
+            btn_bg = "#3498db"
+            btn_fg = "white"
+        elif button_text in ["sin", "cos", "tan", "π"]:
+            btn_bg = "#9b59b6"
+            btn_fg = "white"
+        else:
+            btn_bg = button_color
+            btn_fg = text_color
+        
         button = tk.Button(
-            window, 
-            text=button_text, 
-            width=button_width, 
-            height=button_height, 
-            font=button_font, 
-            bg=button_color, 
-            fg="white",
-            command=lambda text=button_text: on_button_click(text)
+            window,
+            text=button_text,
+            width=button_width,
+            height=button_height,
+            font=font_buttons,
+            bg=btn_bg,
+            fg=btn_fg,
+            activebackground=button_hover,
+            activeforeground="white",
+            relief=tk.RAISED,
+            bd=2,
+            command=create_command(button_text)
         )
-        button.grid(row=row_index + 1, column=col_index, padx=5, pady=5)
+        button.grid(row=row_index + 1, column=col_index, padx=5, pady=5, sticky="nsew")
+
+# Configure grid weights for responsive layout
+for i in range(7):
+    window.grid_rowconfigure(i, weight=1)
+for i in range(4):
+    window.grid_columnconfigure(i, weight=1)
 
 # Start the app
-window.mainloop()
+if __name__ == "__main__":
+    window.mainloop()
