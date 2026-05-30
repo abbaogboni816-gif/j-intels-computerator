@@ -15,7 +15,39 @@ Version: 2.0 - Professional Edition
 
 import math
 from sympy import symbols, solve, diff, integrate
-from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
+from sympy.parsing.sympy_parser import (
+    parse_expr,
+    standard_transformations,
+    implicit_multiplication_application,
+    convert_xor,
+)
+
+
+TRANSFORMATIONS = standard_transformations + (
+    implicit_multiplication_application,
+    convert_xor,
+)
+
+
+def _parse_expression(expression, local_dict):
+    """Parse user-friendly math syntax into a SymPy expression."""
+    return parse_expr(
+        expression,
+        transformations=TRANSFORMATIONS,
+        local_dict=local_dict,
+    )
+
+
+def _normalize_equation(expression):
+    """Convert equations with '=' into an expression equal to zero."""
+    if "=" not in expression:
+        return expression
+
+    left, right = expression.split("=", 1)
+    if not left.strip() or not right.strip():
+        raise ValueError("Equation must have values on both sides of '='")
+
+    return f"({left}) - ({right})"
 
 
 def add(a, b):
@@ -74,9 +106,8 @@ def solve_algebra(expression):
     """
     try:
         x = symbols('x')
-        # Use parse_expr with transformations to handle implicit multiplication like (x+3)(x-3)
-        transformations = standard_transformations + (implicit_multiplication_application,)
-        expr = parse_expr(expression, transformations=transformations, local_dict={'x': x})
+        expression = _normalize_equation(expression)
+        expr = _parse_expression(expression, {'x': x})
         result = solve(expr, x)
         return result
     except Exception as e:
@@ -103,9 +134,7 @@ def differentiate(expression, variable='x'):
     """
     try:
         var = symbols(variable)
-        # Use parse_expr with transformations to handle implicit multiplication
-        transformations = standard_transformations + (implicit_multiplication_application,)
-        expr = parse_expr(expression, transformations=transformations, local_dict={variable: var})
+        expr = _parse_expression(expression, {variable: var})
         derivative = diff(expr, var)
         return str(derivative)
     except Exception as e:
@@ -132,9 +161,7 @@ def integrate_expression(expression, variable='x'):
     """
     try:
         var = symbols(variable)
-        # Use parse_expr with transformations to handle implicit multiplication
-        transformations = standard_transformations + (implicit_multiplication_application,)
-        expr = parse_expr(expression, transformations=transformations, local_dict={variable: var})
+        expr = _parse_expression(expression, {variable: var})
         integral = integrate(expr, var)
         return str(integral)
     except Exception as e:

@@ -204,6 +204,11 @@
             }
         }
 
+        function parseNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+        }
+
         function calculate() {
             const operation = document.getElementById("operation").value;
             const num1 = document.getElementById("num1").value;
@@ -228,10 +233,25 @@
             };
 
             if (["add", "subtract", "multiply", "divide", "modulus"].includes(operation)) {
-                requestBody.num1 = parseFloat(num1);
-                requestBody.num2 = parseFloat(num2);
+                const parsedNum1 = parseNumber(num1);
+                const parsedNum2 = parseNumber(num2);
+
+                if (parsedNum1 === null || parsedNum2 === null) {
+                    showError("Please enter valid numbers");
+                    return;
+                }
+
+                requestBody.num1 = parsedNum1;
+                requestBody.num2 = parsedNum2;
             } else if (operation === "sqrt") {
-                requestBody.num1 = parseFloat(num1);
+                const parsedNum1 = parseNumber(num1);
+
+                if (parsedNum1 === null) {
+                    showError("Please enter a valid number");
+                    return;
+                }
+
+                requestBody.num1 = parsedNum1;
             } else if (["differentiate", "integrate"].includes(operation)) {
                 requestBody.expression = num1;
                 requestBody.variable = variable;
@@ -251,6 +271,8 @@
                 .then(data => {
                     if (data.error) {
                         showError(data.error);
+                    } else if (Array.isArray(data.result)) {
+                        showSuccess(`Result: ${data.result.join(", ")}`);
                     } else if (data.result !== undefined) {
                         showSuccess(`Result: ${data.result}`);
                     } else {
